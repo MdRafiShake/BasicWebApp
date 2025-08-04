@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
           const divContainer = document.createElement('div');
 
-          // Only show edit/delete if the logged in user is the author
+          
           if (currentUser === post.author) {
             const editBtn = document.createElement('button');
             editBtn.textContent = 'Edit';
@@ -113,6 +113,19 @@ document.addEventListener('DOMContentLoaded', () => {
   postDiv.appendChild(saveBtn);
 }
 
+// Delete Function  
+function deletePost(postId) {
+  fetch(`/posts/${postId}`, {
+    method: 'DELETE',
+    credentials: 'include'
+  })
+    .then(res => {
+      if (!res.ok) throw new Error('Failed to delete');
+      return res.json();
+    })
+    .then(() => loadPosts())
+    .catch(err => alert(err.message));
+}
 
 
   // Post submission
