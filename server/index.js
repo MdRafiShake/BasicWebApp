@@ -77,10 +77,18 @@ function authMiddleware(req, res, next) {
 
 // fetching with user posts
 app.get('/posts', authMiddleware, async (req, res) => {
-  const [rows] = await db.query('SELECT * FROM posts WHERE user_id = ? ORDER BY id DESC', [req.session.user.id]);
-  res.json(rows);
+  try {
+    const [rows] = await db.query(`
+      SELECT posts.id, posts.content, users.username AS author
+      FROM posts
+      JOIN users ON posts.user_id = users.id
+      ORDER BY posts.id DESC
+    `);
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to load posts' });
+  }
 });
-
 
 
 // CUD operations for posts 

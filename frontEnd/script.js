@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentUser = null;
 
 
-//cheking login status
+  //cheking login status
 
   fetch('/login-status', { credentials: 'include' })
     .then(res => {
@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
       loadPosts();
     })
     .catch(() => {
-      window.location.href = '/login.html'; 
+      window.location.href = '/login.html';
     });
 
 
@@ -36,31 +36,46 @@ document.addEventListener('DOMContentLoaded', () => {
       .then(res => res.json())
       .then(posts => {
         postsContainer.innerHTML = '';
+        console.log(posts);
         posts.forEach(post => {
           const div = document.createElement('div');
           div.className = 'posts';
-          div.textContent = post.content;
+          
+          const contentDiv= document.createElement('div')
+          contentDiv.id = 'contentDiv';
+          div.appendChild(contentDiv);
+
+          
+          const author = document.createElement('span')
+          author.innerHTML = `<span>Author: </span><span id='authorName'>${post.author}</span>`;
+          author.id = 'author';
+          contentDiv.appendChild(author);
+          
+          const conntent = document.createElement('p');
+          conntent.textContent = post.content
+          contentDiv.appendChild(conntent);
+
+        
 
           const divContainer = document.createElement('div');
 
-          
-          // EditButton 
-          const editBtn = document.createElement('button');
+          // Only show edit/delete if the logged in user is the author
+          if (currentUser === post.author) {
+            const editBtn = document.createElement('button');
+            editBtn.textContent = 'Edit';
+            editBtn.style.marginLeft = '10px';
+            editBtn.onclick = () => editPost(post.id, div, post.content);
 
-          editBtn.style.marginLeft = '10px';
-          editBtn.textContent = 'Edit';
-          editBtn.onclick = () => editPost(post.id, div);
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'Delete';
+            deleteBtn.style.marginLeft = '10px';
+            deleteBtn.onclick = () => deletePost(post.id);
 
-          // DeleteButton
-          const deleteBtn = document.createElement('button');
-          deleteBtn.style.marginLeft = '10px';
-          deleteBtn.textContent = 'Delete';
-          deleteBtn.onclick = () => deletePost(post.id);
+            divContainer.appendChild(editBtn);
+            divContainer.appendChild(deleteBtn);
+          }
 
-          // Appending elements to post
           div.appendChild(divContainer);
-          divContainer.appendChild(editBtn);
-          divContainer.appendChild(deleteBtn);
           postsContainer.appendChild(div);
         });
       });
@@ -68,53 +83,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   // Edit Function
-  function editPost(postId, postDiv) {
-    const currentText = postDiv.firstChild.textContent;
-    const textarea = document.createElement('input');
-    textarea.type = 'text';
-    textarea.value = currentText;
+  function editPost(postId, postDiv, originalContent) {
+  const textarea = document.createElement('input');
+  textarea.type = 'text';
+  textarea.value = originalContent;
 
-    const saveBtn = document.createElement('button');
-    saveBtn.textContent = 'Save';
-    saveBtn.onclick = () => {
-      const newContent = textarea.value.trim();
-      if (!newContent) return alert('Content cannot be empty');
-
-      fetch(`/posts/${postId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ content: newContent })
-      })
-        .then(res => {
-          if (!res.ok) throw new Error('Failed to update');
-          return res.json();
-        })
-        .then(() => loadPosts())
-        .catch(err => alert(err.message));
-    };
-
-    postDiv.innerHTML = '';
-    postDiv.appendChild(textarea);
-    postDiv.appendChild(saveBtn);
-  }
-
-
-  // Delete Function
-  function deletePost(postId) {
-    if (!confirm('Are you sure you want to delete this post?')) return;
+  const saveBtn = document.createElement('button');
+  saveBtn.textContent = 'Save';
+  saveBtn.onclick = () => {
+    const newContent = textarea.value.trim();
+    if (!newContent) return alert('Content cannot be empty');
 
     fetch(`/posts/${postId}`, {
-      method: 'DELETE',
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
+      body: JSON.stringify({ content: newContent })
     })
       .then(res => {
-        if (!res.ok) throw new Error('Failed to delete');
+        if (!res.ok) throw new Error('Failed to update');
         return res.json();
       })
       .then(() => loadPosts())
       .catch(err => alert(err.message));
-  }
+  };
+
+  postDiv.innerHTML = '';
+  postDiv.appendChild(textarea);
+  postDiv.appendChild(saveBtn);
+}
+
 
 
   // Post submission
