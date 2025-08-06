@@ -64,12 +64,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const editBtn = document.createElement('button');
             editBtn.textContent = 'Edit';
             editBtn.style.marginLeft = '10px';
-            editBtn.onclick = () => editPost(post.id, div, post.content);
+            editBtn.onclick = () => popupBtn('Edit', post.id, div, post.content); 
 
             const deleteBtn = document.createElement('button');
             deleteBtn.textContent = 'Delete';
             deleteBtn.style.marginLeft = '10px';
-            deleteBtn.onclick = () => deletePost(post.id);
+            deleteBtn.onclick = () => popupBtn('Delete', post.id, div, post.content);
 
             divContainer.appendChild(editBtn);
             divContainer.appendChild(deleteBtn);
@@ -82,9 +82,57 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
 
+
+  
+// popup btn
+function popupBtn( text, postId, postDiv, postContent){
+  const popContainer = document.createElement('div');
+  popContainer.className = 'popup-container';
+
+  const popup =document.createElement('div');
+  popup.className = 'popup';
+  popContainer.appendChild(popup);
+
+  const title = document.createElement('h2');
+  title.textContent = `Are you sure you want to ${text} this post?`;
+  popup.appendChild(title);
+
+  const buttonsContainer = document.createElement('div');
+  buttonsContainer.className = 'buttons-container';
+  popup.appendChild(buttonsContainer);
+
+  const yesbtn = document.createElement('button');
+  yesbtn.textContent = 'Yes';
+  yesbtn.onclick = () => {
+    if (text === 'Edit') {
+      editPost(postId, postDiv, postContent);
+    } else if (text === 'Delete') {
+      deletePost(postId);
+    }
+    document.body.removeChild(popContainer);
+  };  
+
+  buttonsContainer.appendChild(yesbtn);
+  const nobtn = document.createElement('button');
+  nobtn.textContent = 'No';
+  nobtn.onclick = () => {
+    document.body.removeChild(popContainer);
+  };
+  buttonsContainer.appendChild(nobtn);  
+  document.body.appendChild(popContainer);
+
+}
+
+
+
+
+
+
+
+
   // Edit Function
   function editPost(postId, postDiv, originalContent) {
-  const textarea = document.createElement('input');
+  const textarea = document.createElement('textarea');
   textarea.type = 'text';
   textarea.value = originalContent;
 
@@ -128,6 +176,8 @@ function deletePost(postId) {
 }
 
 
+
+
   // Post submission
   postForm.addEventListener("submit", function (e) {
     e.preventDefault();
@@ -158,6 +208,12 @@ function deletePost(postId) {
       .then(() => window.location.href = '/login.html');
   });
 });
+
+
+
+
+
+
 
 
 
